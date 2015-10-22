@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">TabletViewer</string>
+
+    <string name="hello_world">Tablet View</string>
+    <string name="action_settings">Settings</string>
+    <string name="gh_client_id">a75705f3bd663c7bc942</string>
+    <string name="gh_client_secret">9c0ef14ec074901f976af5c73db901faac27c519</string>
+    <string name="gh_client_callback">http://localhost:4567/callback</string>
+
+    <string name="my_access_code">cffa6bf2b4a5151b6d2f7fed99a2e222c19c8f1f</string>
+    <string name="code">
+"main(t,_,a)
+char
+*
+a;
+{
+	return!
+
+main(-79,-13,a+
+main(-87,1-_,
+main(-86, 0, a+1 )
+
++a)):
+
+1,
+main(t+1, _, a )
+Int x = 3
+
+main ( -94, -27+t, a )
+t == 2 ?_
+13 ?"
+    </string>
+</resources>
