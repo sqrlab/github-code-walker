@@ -1,0 +1,8 @@
+<resources>
+    <string name="client">a75705f3bd663c7bc942</string>
+    <string name="secret">9c0ef14ec074901f976af5c73db901faac27c519</string>
+    <string name="OAuth">http://localhost:4567/callback</string>
+
+    <string name="token">cffa6bf2b4a5151b6d2f7fed99a2e222c19c8f1f</string>
+
+</resources>
