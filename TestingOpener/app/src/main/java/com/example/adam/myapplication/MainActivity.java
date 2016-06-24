@@ -37,6 +37,8 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -88,7 +90,8 @@ public class MainActivity extends AppCompatActivity {
         openIt("https://raw.githubusercontent.com/Adam-Anthony/JAX-/master/Java/BackEnd.java");
     }
     public void openC(View view){
-        openIt("https://raw.githubusercontent.com/Adam-Anthony/JAX-/master/Java/ReadMe.txt");
+        //openIt("https://raw.githubusercontent.com/Adam-Anthony/JAX-/master/Java/ReadMe.txt");
+
     }
     public void openD(View view){
         openIt("https://raw.githubusercontent.com/Adam-Anthony/JAX-/master/Java/Test.java");
@@ -143,13 +146,43 @@ public class MainActivity extends AppCompatActivity {
                         fileInfo1.content = contents.get(0).content;
                         fileInfo1.path = contents.get(0).path;
                         fileInfo1.head = null;
-                        Log.d("FileInfo", fileInfo1.content);
+
+
+                        /*
+                        URL apiPage = new URL(response.getUrl());
+                        BufferedReader in = new BufferedReader(new InputStreamReader(apiPage.openStream()));
+
+                        String loadedPage = "";
+                        String TempPage;
+                        while ((TempPage = in.readLine()) != null){
+                            loadedPage += TempPage;
+                        }
+                        in.close();
+
+                        Pattern p = Pattern.compile("https:\\/\\/raw[^\"]+");
+                        Matcher m = p.matcher(loadedPage);
+                        boolean b = m.matches();
+
+                        if ( b ){
+                            Log.d("Regex", "Matched")
+                        }
+                        */
+
+                        String file = "Folder";
+                        if ( contents.get(0).isFile() ){
+                            file = "File";
+                        }
+                        Log.d("FileType",file);
+
+                        //Adding the buttons to the side click bar.
                         for (int i = 0; i < 3; i++) {
                             LinearLayout linearLayout = (LinearLayout) findViewById(R.id.fileList);
                             TextView tv1 = new TextView(getApplicationContext());
                             tv1.setText(contents.get(i).name);
                             tv1.setPadding(5, 5, 5, 5);
-                            /*
+
+
+                            /* Attempting to grab the file names
                             tv1.setClickable(true);
                             tv1.setOnClickListener(new View.OnClickListener() {
                                 @Override
@@ -169,6 +202,8 @@ public class MainActivity extends AppCompatActivity {
                         intent.putExtra("val", x);
                         startActivity(intent);
                         */
+
+
                         //Send intent with Strings to be caught?
                     } catch (Exception e) {
 
