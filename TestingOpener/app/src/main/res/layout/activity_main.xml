@@ -36,7 +36,7 @@
 
         <LinearLayout
             android:orientation="vertical"
-            android:layout_width="fill_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/fileList">
 
@@ -92,14 +92,7 @@
                 android:paddingBottom="10dp"
                 android:paddingRight="4dp" />
 
-            <Button
-                style="?android:attr/buttonStyleSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="a"
-                android:id="@+id/button"
-                android:clickable="true"
-                android:onClick="hide"/>
+
         </LinearLayout>
     </ScrollView>
 

@@ -1,20 +1,30 @@
 package com.example.adam.myapplication;
 
+import android.app.ActionBar;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Parcel;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.internal.widget.ActionBarOverlayLayout;
 import android.support.v7.internal.widget.ActivityChooserModel;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -37,23 +47,28 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
+
+
 public class MainActivity extends AppCompatActivity {
     private Button button;
     private WebView webView;
     private ScrollView scrollView;
+    final String INTENT_PARM =  "RepoInformation";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         //Button?
-        button = (Button)findViewById(R.id.button);
+        //button = (Button)findViewById(R.id.button);
 
         //Scrollview?
         scrollView = (ScrollView)findViewById(R.id.scrollView2);
@@ -67,9 +82,61 @@ public class MainActivity extends AppCompatActivity {
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
 
+        LocalBroadcastManager.getInstance(this).registerReceiver(br,new IntentFilter(INTENT_PARM));
+
+
         //HARDCODED STARTING PAGE
         openIt("https://raw.githubusercontent.com/Adam-Anthony/JAX-/master/Java/BackEnd.java");
 
+    }
+
+    private BroadcastReceiver br = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d("BR", "hit");
+            for (int i=0;i<3;i++) {
+                String[] info = intent.getStringArrayExtra("Content" + String.valueOf(i));
+                String name = info[0];
+                String url = info[1];
+                String type = info[2];
+
+                Log.d("recieve", name);
+                Log.d("recieve", url);
+                TextView t = new TextView(MainActivity.this);
+                t.setText(name);
+                t.setPadding(4, 10, 10, 4);
+
+                if (type.equals("File")) {
+
+                    try {
+                        pullURLInfo pullURL = new pullURLInfo();
+                        String a = pullURL.execute(url).get();
+                        t.setClickable(true);
+                        Log.d("clicker", "making");
+                        t.setOnClickListener(new NavClickListener(a) {
+                            @Override
+                            public void onClick(View v) {
+                                openIt(url);
+                            }
+                        });
+                        Log.d("clicker", "made");
+                    }catch (ExecutionException | InterruptedException ei){
+                        Log.d("ExecutionErro",ei.toString());
+                    }
+                } else {
+                    t.setTextColor(Color.BLUE);
+                }
+
+                LinearLayout linearLayout = (LinearLayout) findViewById(R.id.fileList);
+                linearLayout.addView(t);
+                Log.d("Added", type);
+            }
+        }
+    };
+
+    protected void onDestroy(){
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(br);
+        super.onDestroy();
     }
 
     public void openIt(String a){
@@ -112,27 +179,37 @@ public class MainActivity extends AppCompatActivity {
         protected Void doInBackground (Void... params){
             //Storing credentials
             StoreCredentials credentials = new StoreCredentials(getApplicationContext());
+
+            //Token
             credentials.storeToken(getString(R.string.token));
+
             SimpleDeveloperCredentialsProvider credentialsProvider = new SimpleDeveloperCredentialsProvider(null, null, null);
 
             //Checking in credentials
             GithubDeveloperCredentials.getInstance();
             GithubDeveloperCredentials.init(credentialsProvider);
 
+            Log.d("Background", "Started");
+
             //Setting up the repo info
             final RepoInfo repoInfo = new RepoInfo();
 
             //Repo owner name and Repository name
-            repoInfo.owner = "Adam-Anthony";
-            repoInfo.name = "JAX-";
+            repoInfo.owner = "omkarmoghe";
+            repoInfo.name = "Pokemap";
+            //Repo Owner name and Repository name
+
 
             //File info based on the repository information
             final FileInfo fileInfo = new FileInfo();
             fileInfo.repoInfo = repoInfo;
 
             //Grabbing the Repo Content
-            GetRepoContentsClient contentsClient = new GetRepoContentsClient(getApplicationContext(),repoInfo, "Java");
+            GetRepoContentsClient contentsClient = new GetRepoContentsClient(getApplicationContext(),repoInfo, "app");
+            //Folder Name
+
             contentsClient.setOnResultCallback(new BaseClient.OnResultCallback<List<Content>>() {
+
                 //OK Response
                 @Override
                 public void onResponseOk(final List<Content> contents, Response response) {    
@@ -143,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
                         final FileInfo fileInfo1 = new FileInfo();
                         fileInfo1.repoInfo = repoInfo;
                         fileInfo1.name = contents.get(0).name;
-                        fileInfo1.content = contents.get(0).content;
+                        fileInfo1.content = contents.get(0).git_url;
                         fileInfo1.path = contents.get(0).path;
                         fileInfo1.head = null;
 
@@ -168,19 +245,33 @@ public class MainActivity extends AppCompatActivity {
                         }
                         */
 
-                        String file = "Folder";
-                        if ( contents.get(0).isFile() ){
-                            file = "File";
-                        }
-                        Log.d("FileType",file);
-
                         //Adding the buttons to the side click bar.
-                        for (int i = 0; i < 3; i++) {
-                            LinearLayout linearLayout = (LinearLayout) findViewById(R.id.fileList);
-                            TextView tv1 = new TextView(getApplicationContext());
-                            tv1.setText(contents.get(i).name);
-                            tv1.setPadding(5, 5, 5, 5);
 
+                        //LinearLayout linearLayout = (LinearLayout) findViewById(R.id.fileList);
+
+                        String file;
+                        Intent contentIntent = new Intent();
+                        contentIntent.setAction(INTENT_PARM);
+                        for (int i = 0; i < 3; i++) {
+                            file = "Folder";
+                            if ( contents.get(i).isFile() ){
+                                file = "File";
+                            }
+                            Log.d("FileType",file);
+
+                            String[] filler = new String[3];
+                            filler[0] = contents.get(i).name;
+                            filler[1] = contents.get(i).url;
+                            filler[2] = file;
+
+
+                            contentIntent.putExtra("Content" + String.valueOf(i),filler);
+
+                            //TextView tv1 = new TextView(getBaseContext());
+                            //tv1.setText(contents.get(i).name);
+                            //tv1.setPadding(5, 5, 5, 5);
+
+                            Log.d("Name", contents.get(i).name);
 
                             /* Attempting to grab the file names
                             tv1.setClickable(true);
@@ -192,10 +283,16 @@ public class MainActivity extends AppCompatActivity {
                                     //textView.setText(c.name);
                                 }
                             });
-                            linearLayout.addView(tv1);
                             */
-                        }
 
+                            //linearLayout.addView(tv1);
+
+                        }
+                        Log.d("Intent", "Sending");
+
+                        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(contentIntent);
+
+                        Log.d("Intent", "Sent");
                         //String x = contents.get(0).name;
                         /* Intent sending.
                         Intent intent = new Intent(getApplicationContext(), getReposFile.class);
@@ -219,10 +316,12 @@ public class MainActivity extends AppCompatActivity {
                 //Fail Response
             });
             //Repo Content grabbed.
-            
+
             contentsClient.execute();
             //Executing the contentsClient.
 
+
+            Log.d("background", "Finished");
             return null;
         }
 
@@ -232,20 +331,65 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = getIntent();
             String str = intent.getStringExtra("var");
             */
+            Log.d("Post", "Started");
             LinearLayout linearLayout = (LinearLayout) findViewById(R.id.fileList);
 
-            TextView tv1 = new TextView(getApplication());
+            TextView tv1 = new TextView(getBaseContext());
             tv1.setText("ABCDEFGHIJKLMNOP");
+            tv1.setTextSize(22);
+            tv1.setTextColor(Color.BLACK);
+            tv1.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            );
             //Set a text view
 
             linearLayout.addView(tv1);
             //Add to the linear layout
 
-            FileInfo fileInfo = new FileInfo();
+            Log.d("Post", "Ended");
+
+            finish();
+            //FileInfo fileInfo = new FileInfo();
             //Create a file info
         }
     }
 
+    protected class pullURLInfo extends AsyncTask<String, Void, String>{
+        private Exception e;
+
+        protected String doInBackground(String... paramURL){
+            try{
+                URL url = new URL(paramURL[0]);
+
+                Log.d("realurl", "start");
+                BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+                Log.d("realurl", "Worked");
+
+                String loadedPage = "";
+                String TempPage;
+                while ((TempPage = in.readLine()) != null) {
+                    loadedPage += TempPage;
+                }
+                in.close();
+
+                Pattern p = Pattern.compile("https:\\/\\/raw[^\"]+");
+                Matcher m = p.matcher(loadedPage);
+                boolean b = m.find();
+                if (b) {
+                    String matched = m.group();
+                    Log.d("Urls?", matched);
+
+                    return matched;
+                }else{
+                    return paramURL[0];
+                }
+            }catch (Exception e){
+                this.e = e;
+                Log.d("AsyncException", e.toString());
+                return null;
+            }
+        }
+    }
 
 //
 // AsynchTask for reading the characters from the file  
@@ -330,4 +474,6 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
 }
+
