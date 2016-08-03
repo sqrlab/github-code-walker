@@ -94,7 +94,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d("BR", "hit");
-            for (int i=0;i<3;i++) {
+
+            for (int i=0;i<4;i++) {
                 String[] info = intent.getStringArrayExtra("Content" + String.valueOf(i));
                 String name = info[0];
                 String url = info[1];
@@ -121,10 +122,66 @@ public class MainActivity extends AppCompatActivity {
                         });
                         Log.d("clicker", "made");
                     }catch (ExecutionException | InterruptedException ei){
-                        Log.d("ExecutionErro",ei.toString());
+                        Log.d("ExecutionErr",ei.toString());
                     }
                 } else {
                     t.setTextColor(Color.BLUE);
+                    t.setClickable(true);
+                    /*
+                    t.setOnClickListener(new NavClickListener(url) {
+                        @Override
+                        public void onClick(View v) {
+                            try {
+                                URL urlObj = new URL(url);
+                                BufferedReader in = new BufferedReader(new InputStreamReader(urlObj.openStream()));
+
+                                String loadedPage = "";
+                                String tempPage;
+                                while ((tempPage = in.readLine()) != null){
+                                    loadedPage += tempPage;
+                                }
+                                in.close();
+
+                                Pattern p = Pattern.compile("\\{[.]*?\\}\\}");
+                                Matcher m = p.matcher(url);
+                                boolean b = m.find();
+                                while (b){
+                                    String links = m.group();
+                                    Pattern pp = Pattern.compile("\"type\": [^,]+");
+                                    Matcher mm = p.matcher(links);
+                                    boolean bb = m.find();
+                                    if (bb){
+                                        String type = m.group();
+                                    }else{
+
+                                    }
+                                    b = m.find();
+                                }
+                            }catch (IOException e){
+                                    Log.d("Error", e.toString());
+                            }
+                        }
+                    });
+                    */
+
+                    //Access URL
+
+                    /*Grab data inside.
+                    Name
+                    Type?
+                        dir
+                            "_links":{
+                                https:\\/\\/api[.]*?ref=dev
+                            }
+                        file
+                            https:\\/\\/raw[^\"]+
+                    */
+                    /*
+                    Pattern p = Pattern.compile("https:\\/\\/api[.]*?ref=dev");
+                    Matcher m = p.matcher(loadedPage);
+                    boolean b = m.find();
+                    Log.d("Folder",url);
+                    */
                 }
 
                 LinearLayout linearLayout = (LinearLayout) findViewById(R.id.fileList);
@@ -224,6 +281,8 @@ public class MainActivity extends AppCompatActivity {
                         fileInfo1.path = contents.get(0).path;
                         fileInfo1.head = null;
 
+                        Log.d("api",response.getUrl());
+
 
                         /*
                         URL apiPage = new URL(response.getUrl());
@@ -252,7 +311,7 @@ public class MainActivity extends AppCompatActivity {
                         String file;
                         Intent contentIntent = new Intent();
                         contentIntent.setAction(INTENT_PARM);
-                        for (int i = 0; i < 3; i++) {
+                        for (int i = 0; i < 4; i++) {
                             file = "Folder";
                             if ( contents.get(i).isFile() ){
                                 file = "File";
