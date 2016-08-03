@@ -27,7 +27,7 @@
     </ScrollView>
 
     <ScrollView
-        android:layout_width="wrap_content"
+        android:layout_width="65dp"
         android:layout_height="wrap_content"
         android:id="@+id/scrollView2"
         android:layout_alignParentStart="true"
@@ -38,59 +38,8 @@
             android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/fileList">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/a"
-                android:id="@+id/textView"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentStart="true"
-                android:clickable="true"
-                android:onClick="openA"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp"
-                android:paddingRight="4dp"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/b"
-                android:id="@+id/textView2"
-                android:layout_below="@+id/textView"
-                android:layout_alignParentStart="true"
-                android:clickable="true"
-                android:onClick="openB"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp"
-                android:paddingRight="4dp"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/c"
-                android:id="@+id/textView3"
-                android:layout_below="@+id/textView2"
-                android:layout_alignParentStart="true"
-                android:clickable="true"
-                android:onClick="openC"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp"
-                android:paddingRight="4dp"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/d"
-                android:id="@+id/textView4"
-                android:layout_below="@+id/textView3"
-                android:layout_alignParentStart="true"
-                android:clickable="true"
-                android:onClick="openD"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp"
-                android:paddingRight="4dp" />
+            android:id="@+id/fileList"
+            android:scrollbarAlwaysDrawHorizontalTrack="true">
 
 
         </LinearLayout>

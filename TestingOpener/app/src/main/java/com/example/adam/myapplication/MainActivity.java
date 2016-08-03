@@ -1,43 +1,43 @@
 package com.example.adam.myapplication;
 
 import android.app.ActionBar;
-import android.content.BroadcastReceiver;
+
 import android.content.Context;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.ColorStateList;
+
 import android.graphics.Color;
+
 import android.os.AsyncTask;
-import android.os.Parcel;
+
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.internal.widget.ActionBarOverlayLayout;
-import android.support.v7.internal.widget.ActivityChooserModel;
-import android.text.method.ScrollingMovementMethod;
+
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
+
+
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.alorma.github.basesdk.client.BaseClient;
-import com.alorma.github.basesdk.client.GithubDeveloperCredentialsProvider;
 import com.alorma.github.basesdk.client.StoreCredentials;
 import com.alorma.github.basesdk.client.credentials.GithubDeveloperCredentials;
 import com.alorma.github.basesdk.client.credentials.SimpleDeveloperCredentialsProvider;
 import com.alorma.github.sdk.bean.dto.response.Content;
 import com.alorma.github.sdk.bean.info.FileInfo;
 import com.alorma.github.sdk.bean.info.RepoInfo;
-import com.alorma.github.sdk.services.content.GetFileContentClient;
 import com.alorma.github.sdk.services.repo.GetRepoContentsClient;
+import com.unnamed.b.atv.model.TreeNode;
+import com.unnamed.b.atv.view.AndroidTreeView;
 
 import org.w3c.dom.Text;
 
@@ -90,43 +90,75 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+    //Broadcast reciever to grab information from the RepoInfo
     private BroadcastReceiver br = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d("BR", "hit");
 
+            //The amount is set at 4
+            //ToDo: set dynamic size by going until there isn't any more content.
+            TreeNode root = TreeNode.root();
+            TreeNode parent = new TreeNode("app");
+
             for (int i=0;i<4;i++) {
+                //Grabbing each ArrayExtra one by one.
                 String[] info = intent.getStringArrayExtra("Content" + String.valueOf(i));
+
+                //Setting up variables as they are stored
                 String name = info[0];
                 String url = info[1];
                 String type = info[2];
 
                 Log.d("recieve", name);
                 Log.d("recieve", url);
+
+                TreeNode child = new TreeNode(name);
+                //Create the TextView that this information will be accessible from
+                /*
                 TextView t = new TextView(MainActivity.this);
                 t.setText(name);
                 t.setPadding(4, 10, 10, 4);
-
+                */
+                //File
                 if (type.equals("File")) {
 
                     try {
                         pullURLInfo pullURL = new pullURLInfo();
                         String a = pullURL.execute(url).get();
-                        t.setClickable(true);
+                        //t.setClickable(true);
                         Log.d("clicker", "making");
-                        t.setOnClickListener(new NavClickListener(a) {
+
+                        child.setClickListener(new NavTreeListener(a) {
+                            @Override
+                            public void onClick(TreeNode node, Object value) {
+                                openIt(url);
+
+                            }
+                        });
+
+                        /*t.setOnClickListener(new NavClickListener(a) {
                             @Override
                             public void onClick(View v) {
                                 openIt(url);
                             }
                         });
+                        */
                         Log.d("clicker", "made");
                     }catch (ExecutionException | InterruptedException ei){
                         Log.d("ExecutionErr",ei.toString());
                     }
+                    //end File
                 } else {
-                    t.setTextColor(Color.BLUE);
-                    t.setClickable(true);
+                    //Folder / dir
+
+                    //setting a distinguishing feature to show it is a folder
+                    //t.setTextColor(Color.BLUE);
+                    //t.setClickable(true);
+
+
+
                     /*
                     t.setOnClickListener(new NavClickListener(url) {
                         @Override
@@ -182,12 +214,21 @@ public class MainActivity extends AppCompatActivity {
                     boolean b = m.find();
                     Log.d("Folder",url);
                     */
-                }
 
-                LinearLayout linearLayout = (LinearLayout) findViewById(R.id.fileList);
-                linearLayout.addView(t);
+                }
+                parent.addChild(child);
+                //Adding the TextView to the view.
+                //LinearLayout linearLayout = (LinearLayout) findViewById(R.id.fileList);
+                //linearLayout.addView(t);
                 Log.d("Added", type);
             }
+            root.addChild(parent);
+            AndroidTreeView atv = new AndroidTreeView(MainActivity.this, root);
+            atv.setUseAutoToggle(true);
+            atv.setUse2dScroll(true);
+            atv.setSelectionModeEnabled(true);
+            LinearLayout linearLayout = (LinearLayout) findViewById(R.id.fileList);
+            linearLayout.addView(atv.getView());
         }
     };
 
@@ -206,21 +247,6 @@ public class MainActivity extends AppCompatActivity {
         coder.execute(a);
     }
 
-//HARD CODED DOWNLOAD FILE URL ACCESS
-    public void openA(View view){
-        openIt("https://raw.githubusercontent.com/Adam-Anthony/JAX-/master/Java/A%20-%20Run.bat");
-    }
-    public void openB(View view){
-        openIt("https://raw.githubusercontent.com/Adam-Anthony/JAX-/master/Java/BackEnd.java");
-    }
-    public void openC(View view){
-        //openIt("https://raw.githubusercontent.com/Adam-Anthony/JAX-/master/Java/ReadMe.txt");
-
-    }
-    public void openD(View view){
-        openIt("https://raw.githubusercontent.com/Adam-Anthony/JAX-/master/Java/Test.java");
-    }
-//HARD CODED DOWNLOAD FILE URL ACCESS
 
 //
     //What's this for?
@@ -390,37 +416,23 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = getIntent();
             String str = intent.getStringExtra("var");
             */
-            Log.d("Post", "Started");
-            LinearLayout linearLayout = (LinearLayout) findViewById(R.id.fileList);
-
-            TextView tv1 = new TextView(getBaseContext());
-            tv1.setText("ABCDEFGHIJKLMNOP");
-            tv1.setTextSize(22);
-            tv1.setTextColor(Color.BLACK);
-            tv1.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-            );
-            //Set a text view
-
-            linearLayout.addView(tv1);
-            //Add to the linear layout
-
-            Log.d("Post", "Ended");
-
             finish();
             //FileInfo fileInfo = new FileInfo();
             //Create a file info
         }
     }
 
+    //An off main thread class to grab information from the internet
     protected class pullURLInfo extends AsyncTask<String, Void, String>{
         private Exception e;
 
         protected String doInBackground(String... paramURL){
             try{
+                //Set the url as the given values
                 URL url = new URL(paramURL[0]);
 
                 Log.d("realurl", "start");
+                //Open a buffered reader for the webpage
                 BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
                 Log.d("realurl", "Worked");
 
@@ -431,15 +443,23 @@ public class MainActivity extends AppCompatActivity {
                 }
                 in.close();
 
+                //Here we parse through the text of the api page to find the download url
+                // It's easily identifiable by it's https:\\raw beggining
                 Pattern p = Pattern.compile("https:\\/\\/raw[^\"]+");
                 Matcher m = p.matcher(loadedPage);
                 boolean b = m.find();
+
+                //If we find a match, we procced to return the download url to be used as a refrence
                 if (b) {
                     String matched = m.group();
                     Log.d("Urls?", matched);
 
                     return matched;
                 }else{
+                    //If there wasn't a match for some reason (if a folder got sent here somehow)
+                    // then we just return the page we just read
+
+                    //ToDo: Return a value that doesn't cause exceptions but will show blank instead of the API page
                     return paramURL[0];
                 }
             }catch (Exception e){
@@ -457,9 +477,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... params) {
             try {
-                //ToDo: Read repo url, and display the different files within for selection.
-
-                //Todo: Make the selectable files open their download urls and in this asynch task.
 
                 //Params[0] is the url of the download_file
                 URL url = new URL(params[0]);
