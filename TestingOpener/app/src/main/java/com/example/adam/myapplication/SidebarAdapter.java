@@ -2,6 +2,7 @@ package com.example.adam.myapplication;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.media.Image;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -72,6 +73,7 @@ public class SidebarAdapter extends BaseAdapter{
         boolean isDir = filesList[position].isDirectory();
 
         rowView = inflater.inflate(R.layout.file_list, null);
+        rowView.setBackgroundColor(Color.WHITE);
         holder.img = (ImageView) rowView.findViewById(R.id.icon);
         holder.tv = (TextView) rowView.findViewById(R.id.filename);
 

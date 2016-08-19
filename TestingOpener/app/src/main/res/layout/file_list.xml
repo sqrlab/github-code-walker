@@ -7,16 +7,17 @@
     >
     <ImageView
         android:id="@+id/icon"
-        android:layout_width="20dp"
-        android:layout_height="25dp"
+        android:layout_width="18dp"
+        android:layout_height="22dp"
         android:layout_gravity="center"
         />
     <TextView
         android:id="@+id/filename"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingBottom="15dp"
-        android:paddingTop="15dp"
+        android:textSize="1.6mm"
+        android:paddingBottom="17dp"
+        android:paddingTop="17dp"
         android:singleLine="true"
         />
 </LinearLayout>
