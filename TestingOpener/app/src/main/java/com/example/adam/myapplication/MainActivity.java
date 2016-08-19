@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 
 
@@ -29,11 +30,13 @@ import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.alorma.github.basesdk.client.BaseClient;
 import com.alorma.github.basesdk.client.StoreCredentials;
@@ -64,15 +67,18 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
     //private LinearLayout scrollView;
     final String INTENT_PARM = "RepoInformation";
+    final String INTENT_BAR = "ActionBarUpdate";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        getSupportActionBar().setTitle("Code Walker");
+
         //Opening Repo Files
-        getReposFile getRepo = new getReposFile();
-        getRepo.execute("app");
+        GetReposFile g = new GetReposFile(this);
+        g.execute("app");
 
         //Textview Code area;
         webView = (WebView) findViewById(R.id.web);
@@ -84,7 +90,15 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setBuiltInZoomControls(true);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(br, new IntentFilter(INTENT_PARM));
+        LocalBroadcastManager.getInstance(this).registerReceiver(actionbar, new IntentFilter(INTENT_BAR));
     }
+
+    private BroadcastReceiver actionbar = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            getSupportActionBar().setTitle(intent.getStringExtra("title"));
+        }
+    };
 
     //Broadcast reciever to grab information from the RepoInfo
     private BroadcastReceiver br = new BroadcastReceiver() {
@@ -115,17 +129,20 @@ public class MainActivity extends AppCompatActivity {
             int folderAdjust = 0;
 
             if (backPath.compareTo("app")!=0) {
+                String dotdot = filePath.getParentFile().getParentFile().getPath();
                 Log.d("NotApp","NotApp");
                 folderAdjust = 1;
 
                 files = new GitFile[size+1];
                 files[0] = new GitFile();
+                files[0].setPath(dotdot);
             }else{
                 Log.d("app","app");
                 files = new GitFile[size];
 
             }
             // FileList creator
+
             int offset;
             for (int i = 0; i < size; i++){
                 offset = i + folderAdjust;
@@ -147,13 +164,15 @@ public class MainActivity extends AppCompatActivity {
                         files[offset] = new GitFile("aa", "google.com", true);
                     }
                 }else{
-                    files[offset] = new GitFile(name,path);
+
+                    files[offset] = new GitFile(name,backPath);
                 }
             }
 
             ListView listView = new ListView(MainActivity.this);
             listView.setHorizontalScrollBarEnabled(true);
             listView.setAdapter(new SidebarAdapter(MainActivity.this, webView, files));
+
             scrollView.addView(listView);
 
             Log.d("SIZE", ""+size);
@@ -165,142 +184,6 @@ public class MainActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(br);
         super.onDestroy();
     }
-
-//
-
-
-    //
-    // Grabbing the repository information so we can actually access the folders and files
-    //
-    protected class getReposFile extends AsyncTask<String, Void, Void> {
-
-        protected Void doInBackground(String... params) {
-            //Storing credentials
-            StoreCredentials credentials = new StoreCredentials(getApplicationContext());
-
-            //Token
-            credentials.storeToken(getString(R.string.token));
-
-            SimpleDeveloperCredentialsProvider credentialsProvider = new SimpleDeveloperCredentialsProvider(null, null, null);
-
-            //Checking in credentials
-            GithubDeveloperCredentials.getInstance();
-            GithubDeveloperCredentials.init(credentialsProvider);
-
-            Log.d("Background","Started");
-
-            //Setting up the repo info
-            final RepoInfo repoInfo = new RepoInfo();
-
-            //Repo owner name and Repository name
-            repoInfo.owner="omkarmoghe";
-            repoInfo.name="Pokemap";
-            //Repo Owner name and Repository name
-
-
-            //File info based on the repository information
-            final FileInfo fileInfo = new FileInfo();
-            fileInfo.repoInfo=repoInfo;
-
-            //Grabbing the Repo Content
-            GetRepoContentsClient contentsClient = new GetRepoContentsClient(getApplicationContext(), repoInfo, params[0]);
-            //Folder Name
-
-            contentsClient.setOnResultCallback(new BaseClient.OnResultCallback<List<Content>>() {
-                //OK Response
-                @Override
-                public void onResponseOk ( final List<Content> contents, Response response){
-                    //List<Content>:
-                    //Response:
-
-                    try {
-                        final FileInfo fileInfo1 = new FileInfo();
-                        fileInfo1.repoInfo = repoInfo;
-                        fileInfo1.name = contents.get(0).name;
-                        fileInfo1.content = contents.get(0).git_url;
-                        fileInfo1.path = contents.get(0).path;
-                        fileInfo1.head = null;
-
-                        Log.d("api", response.getUrl());
-
-
-                        String file;
-                        Intent contentIntent = new Intent();
-                        contentIntent.setAction(INTENT_PARM);
-
-                        contentIntent.putExtra("size", contents.size());
-                        contentIntent.putExtra("path", contents.get(0).path);
-
-                        for (int i = 0; i < contents.size(); i++) {
-                            file = "Folder";
-                            if (contents.get(i).isFile()) {
-                                file = "File";
-                            }
-                            Log.d("FileType", file);
-
-                            String[] filler = new String[3];
-                            filler[0] = contents.get(i).name;
-                            filler[1] = contents.get(i).url;
-                            filler[2] = file;
-
-                            contentIntent.putExtra("Content" + String.valueOf(i), filler);
-
-                            Log.d("Name", contents.get(i).name);
-
-                        }
-                        Log.d("Intent", "Sending");
-
-                        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(contentIntent);
-
-                        Log.d("Intent", "Sent");
-                        //String x = contents.get(0).name;
-                        /* Intent sending.
-                        Intent intent = new Intent(getApplicationContext(), getReposFile.class);
-                        intent.putExtra("val", x);
-                        startActivity(intent);
-                        */
-
-
-                        //Send intent with Strings to be caught?
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                //OK Response
-
-                //Fail Response
-                @Override
-                public void onFail (RetrofitError retrofitError){
-
-                }
-                //Fail Response
-            });
-            //Repo Content grabbed.
-            //Executing the contentsClient.
-
-            contentsClient.execute();
-            Log.d("background","Finished");
-
-            return null;
-
-        }
-
-        protected void onPostExecute() {
-
-            /* Intent recieving
-            Intent intent = getIntent();
-            String str = intent.getStringExtra("var");
-            */
-            finish();
-            //FileInfo fileInfo = new FileInfo();
-            //Create a file info
-        }
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////
-
 
 
     //Options Item Selected, generated on startup

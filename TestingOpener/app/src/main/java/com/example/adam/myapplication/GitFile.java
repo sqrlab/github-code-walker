@@ -9,6 +9,8 @@ public class GitFile {
     String rawUrl;
     boolean isDir;
 
+    private String adjustedText;
+
     /*
     * Constructors
     */
@@ -19,6 +21,7 @@ public class GitFile {
         path = "";
         rawUrl = "";
         isDir = true;
+        adjustText();
     }
 
     // File Constructor
@@ -27,6 +30,7 @@ public class GitFile {
         this.path = "";
         this.rawUrl = rawUrl;
         this.isDir = isDir;
+        adjustText();
     }
 
     //Directory / folder  constructor
@@ -35,11 +39,15 @@ public class GitFile {
         this.path = path + "/" + name;
         this.rawUrl = "";
         isDir = true;
+        adjustText();
     }
     /*
     * Constuctors
     */
 
+    private void adjustText(){
+        adjustedText = String.format("%1$-" + 30 + "s", name);
+    }
 
     public void setPath(String path){
         this.path = path;
@@ -69,6 +77,10 @@ public class GitFile {
 
     public boolean isDirectory(){
         return isDir;
+    }
+
+    public String getAdjustedText(){
+        return adjustedText;
     }
 
 }

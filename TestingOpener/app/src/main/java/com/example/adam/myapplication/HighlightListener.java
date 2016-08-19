@@ -10,11 +10,13 @@ import android.view.View;
  */
 public abstract class HighlightListener implements View.OnClickListener {
     SelectHighlight selector;
+    String name;
     String rawUrl;
     ShowCode showCode;
-        public HighlightListener(SelectHighlight selector, String rawUrl, ShowCode showCode){
+        public HighlightListener(SelectHighlight selector, String name, String rawUrl, ShowCode showCode){
             super();
             this.selector = selector;
+            this.name = name;
             this.rawUrl = rawUrl;
             this.showCode = showCode;
         }
